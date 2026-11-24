@@ -278,3 +278,19 @@ $sombra: 0 2px 8px rgba(0, 0, 0, .1);
   background: $verde-claro;
   color: $verde;
 }
+
+// desistir do reembolso: ação "positiva" (o ingresso volta a valer), por isso em laranja e não em vermelho
+.btn-desistir {
+  margin-top: 4px;
+  color: $laranja !important;
+  border-color: $laranja !important;
+  border-radius: 24px;
+}
+
+.pergunta-desistir { color: $cinza-texto !important; }
+
+.btn-manter {
+  background-color: $laranja !important;
+  color: $branco !important;
+  border-radius: 24px;
+}

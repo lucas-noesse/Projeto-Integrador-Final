@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap, throwError } from 'rxjs';
 import { Ingresso, Reembolso } from './ingresso.model';
 import { EventoApi } from './evento.service';
 import { API_URL } from '../api';
@@ -64,6 +64,21 @@ export class IngressoService {
   solicitarReembolso(ingressoId: number, motivo: string): Observable<Reembolso> {
     return this.http.post<ReembolsoApi>(`${API_URL}/reembolsos`, { ingresso: { id: ingressoId }, motivo: motivo.trim() })
       .pipe(map(paraReembolso));
+  }
+
+  // desistir do pedido = excluir o reembolso (DELETE /reembolsos/{id}): o ingresso volta a CONFIRMADO.
+  // A tela conhece o ingresso, não o pedido; por isso, primeiro acha o pedido PENDENTE dele e depois o exclui.
+  // switchMap encadeia as duas chamadas: o DELETE só sai quando a busca responde.
+  desistirDoReembolso(ingressoId: number): Observable<void> {
+    return this.http.get<ReembolsoApi[]>(`${API_URL}/reembolsos`, { params: { status: 'PENDENTE' } }).pipe(
+      switchMap(pendentes => {
+        const pedido = pendentes.find(r => r.ingresso.id === ingressoId);
+        if (!pedido) {
+          return throwError(() => new Error('Pedido de reembolso não encontrado. Ele pode já ter sido decidido pelo organizador.'));
+        }
+        return this.http.delete<void>(`${API_URL}/reembolsos/${pedido.id}`);
+      })
+    );
   }
 
   // pedidos pendentes dos eventos do organizador (GET /usuarios/{id}/reembolsos)

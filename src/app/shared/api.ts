@@ -15,7 +15,8 @@ interface ErroApi {
 // Transforma o erro HTTP em um texto para mostrar na tela.
 export function mensagemDeErro(erro: unknown): string {
   if (!(erro instanceof HttpErrorResponse)) {
-    return 'Erro inesperado. Tente novamente.';
+    // erro criado pelo próprio front (ex.: pedido não encontrado) já tem uma mensagem para mostrar
+    return erro instanceof Error && erro.message ? erro.message : 'Erro inesperado. Tente novamente.';
   }
   if (erro.status === 0) {
     return 'Não foi possível conectar ao servidor. Verifique se a API (backend) está rodando.';

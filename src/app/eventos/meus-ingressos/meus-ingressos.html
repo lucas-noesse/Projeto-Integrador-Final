@@ -106,6 +106,26 @@
   </ng-template>
 </ng-container>
 
+<!-- enquanto o organizador não decide, dá para desistir do pedido (o ingresso volta a valer) -->
+<ng-container *ngIf="ing.status === 'REEMBOLSO_SOLICITADO'">
+  <button mat-stroked-button class="btn-desistir" *ngIf="confirmandoDesistencia !== ing.id; else confirmarDesistencia"
+          (click)="pedirDesistencia(ing)">
+    Desistir do reembolso
+  </button>
+
+  <ng-template #confirmarDesistencia>
+    <div class="confirmacao">
+      <span class="pergunta-desistir">Cancelar o pedido de reembolso? O ingresso volta a valer normalmente.</span>
+      <div>
+        <button mat-button class="btn-nao" (click)="confirmandoDesistencia = undefined">Não</button>
+        <button mat-flat-button class="btn-manter" [disabled]="enviando" (click)="desistir(ing)">
+          {{ enviando ? 'Cancelando...' : 'Sim, desistir' }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>
+
 <p class="aviso" *ngIf="avisos[ing.id] as a" [class.erro]="a.erro" role="status">{{ a.texto }}</p>
       </mat-card-content>
     </mat-card>

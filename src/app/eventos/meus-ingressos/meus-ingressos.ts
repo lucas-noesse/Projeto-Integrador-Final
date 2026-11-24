@@ -107,6 +107,34 @@ export class MeusIngressos {
     });
   }
 
+  // ---- desistir do reembolso (só enquanto o organizador não decidiu) ----
+  confirmandoDesistencia?: number;
+
+  pedirDesistencia(ing: Ingresso) {
+    delete this.avisos[ing.id];
+    this.confirmandoDesistencia = ing.id;
+  }
+
+  desistir(ing: Ingresso) {
+    this.enviando = true;
+    this.ingressoService.desistirDoReembolso(ing.id).subscribe({
+      next: () => {
+        this.confirmandoDesistencia = undefined;
+        this.avisos[ing.id] = { texto: 'Pedido de reembolso cancelado. Seu ingresso voltou a valer.', erro: false };
+        this.carregar();
+      },
+      // ex.: 409 "Este reembolso já foi aprovado e não pode mais ser alterado"
+      error: erro => {
+        this.confirmandoDesistencia = undefined;
+        this.avisos[ing.id] = { texto: mensagemDeErro(erro), erro: true };
+        this.carregar();
+      }
+    }).add(() => {
+      this.enviando = false;
+      this.cdr.markForCheck();
+    });
+  }
+
   // primeiro clique: pede o motivo e a confirmação no cartão
   pedirReembolso(ing: Ingresso) {
     delete this.avisos[ing.id];
